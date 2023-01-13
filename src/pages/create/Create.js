@@ -3,6 +3,8 @@ import Select from "react-select";
 import { useCollection } from "../../hooks/useCollection";
 import { timestamp } from "../../firebase/config";
 import { useAuthContext } from "../../hooks/useAuthContext";
+import { useFirestore } from "../../hooks/useFirestore";
+import { useHistory } from "react-router-dom";
 
 //styles
 import "./Create.css";
@@ -15,9 +17,11 @@ const categories = [
 ];
 
 export default function Create() {
+  const { addDocument, response } = useFirestore("projects");
   const { documents } = useCollection("users");
   const [users, setUsers] = useState([]);
   const { user } = useAuthContext();
+  const history = useHistory();
 
   useEffect(() => {
     if (documents) {
@@ -36,7 +40,7 @@ export default function Create() {
   const [assignedUsers, setAssignedUsers] = useState([]);
   const [formError, setFormError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
 
@@ -74,7 +78,11 @@ export default function Create() {
       assignedUsersList,
     };
 
-    console.log(project);
+    await addDocument(project);
+
+    if (!response.error) {
+      history.push("/");
+    }
   };
 
   return (
@@ -123,7 +131,13 @@ export default function Create() {
             isMulti
           />
         </label>
-        <button className="btn">Add Project</button>
+        {!response.isPending && <button className="btn">Add Project</button>}
+        {response.isPending && (
+          <button className="btn" disabled>
+            Adding Project
+          </button>
+        )}
+        {response.error && <div className="error">{response.error}</div>}
         {formError && <p className="error">{formError}</p>}
       </form>
     </div>
