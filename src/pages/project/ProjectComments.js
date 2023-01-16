@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Avatar from "../../components/Avatar";
 import { timestamp } from "../../firebase/config";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useFirestore } from "../../hooks/useFirestore";
@@ -22,11 +23,33 @@ export default function ProjectComments({ project }) {
     await updateDocument(project.id, {
       comments: [...project.comments, commentToAdd],
     });
+    if (!response.error) {
+      setNewComment("");
+    }
   };
 
   return (
     <div className="project-comments" onSubmit={handleSubmit}>
       <h4>Project Comments</h4>
+
+      <ul>
+        {project.comments.length > 0 &&
+          project.comments.map((comment) => (
+            <li key={comment.id}>
+              <div className="comment-author">
+                <Avatar src={comment.photoURL} />
+                <p>{comment.displayName}</p>
+              </div>
+              <div className="comment-date">
+                <p>date here</p>
+              </div>
+              <div className="comment-content">
+                <p>{comment.content}</p>
+              </div>
+            </li>
+          ))}
+      </ul>
+
       <form className="add-comment">
         <label>
           <span>Add new comment:</span>
